@@ -1,7 +1,7 @@
 {
   "$schema": "https://aka.ms/skillschema",
-  "name": "FilterAndTruncateEmails",
-  "description": "Filters MCP Server emails and truncates body to avoid large payload and token limit issues.",
+  "name": "FilterEmailsSkill",
+  "description": "Filters MCP emails and truncates body to avoid large payload and token limit issues.",
   "type": "function",
   "inputs": [
     {
@@ -37,6 +37,6 @@
   ],
   "implementation": {
     "language": "javascript",
-    "code": "function run(inputs) {\n    const emails = inputs.emails || [];\n    const maxEmails = inputs.maxEmails || 5;\n    const maxBodyLength = inputs.maxBodyLength || 500;\n    const onlyUnread = inputs.onlyUnread !== false;\n\n    let filtered = emails;\n\n    if (onlyUnread) {\n        filtered = filtered.filter(email => !email.isRead);\n    }\n\n    filtered = filtered.slice(0, maxEmails).map(email => ({\n        subject: email.subject || '',\n        from: email.from?.emailAddress?.name || '',\n        receivedDateTime: email.receivedDateTime || '',\n        body: (email.body?.content || '').substring(0, maxBodyLength)\n    }));\n\n    return { filteredEmails: filtered };\n}"
+    "code": "function run(inputs) {\n  const emails = Array.isArray(inputs.emails) ? inputs.emails : [];\n  const maxEmails = inputs.maxEmails || 5;\n  const maxBodyLength = inputs.maxBodyLength || 500;\n  const onlyUnread = inputs.onlyUnread !== false;\n\n  let filtered = emails;\n\n  if (onlyUnread) {\n    filtered = filtered.filter(email => !email.isRead);\n  }\n\n  filtered = filtered.slice(0, maxEmails).map(email => ({\n    subject: email.subject || '',\n    from: email.from?.emailAddress?.name || '',\n    receivedDateTime: email.receivedDateTime || '',\n    body: (email.body?.content || '').substring(0, maxBodyLength)\n  }));\n\n  return { filteredEmails: filtered };\n}"
   }
 }
