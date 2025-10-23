@@ -1,0 +1,42 @@
+{
+  "$schema": "https://aka.ms/skillschema",
+  "name": "FilterAndTruncateEmails",
+  "description": "Filters MCP Server emails and truncates body to avoid large payload and token limit issues.",
+  "type": "function",
+  "inputs": [
+    {
+      "name": "emails",
+      "type": "array",
+      "description": "Array of email objects returned by Email Management MCP Server"
+    },
+    {
+      "name": "maxEmails",
+      "type": "integer",
+      "default": 5,
+      "description": "Maximum number of emails to keep"
+    },
+    {
+      "name": "maxBodyLength",
+      "type": "integer",
+      "default": 500,
+      "description": "Maximum number of characters to keep from email body"
+    },
+    {
+      "name": "onlyUnread",
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to keep only unread emails"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "filteredEmails",
+      "type": "array",
+      "description": "Array of filtered and truncated emails"
+    }
+  ],
+  "implementation": {
+    "language": "javascript",
+    "code": "function run(inputs) {\n    const emails = inputs.emails || [];\n    const maxEmails = inputs.maxEmails || 5;\n    const maxBodyLength = inputs.maxBodyLength || 500;\n    const onlyUnread = inputs.onlyUnread !== false;\n\n    let filtered = emails;\n\n    if (onlyUnread) {\n        filtered = filtered.filter(email => !email.isRead);\n    }\n\n    filtered = filtered.slice(0, maxEmails).map(email => ({\n        subject: email.subject || '',\n        from: email.from?.emailAddress?.name || '',\n        receivedDateTime: email.receivedDateTime || '',\n        body: (email.body?.content || '').substring(0, maxBodyLength)\n    }));\n\n    return { filteredEmails: filtered };\n}"
+  }
+}
